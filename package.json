@@ -42,6 +42,12 @@
     "core/base",
     "core/definitions",
     "connect",
+    "platforms/sui",
+    "platforms/sui/protocols/core",
+    "platforms/sui/protocols/tokenBridge",
+    "examples"
+  ],
+  "nothing": [
     "platforms/evm",
     "platforms/evm/protocols/core",
     "platforms/evm/protocols/tokenBridge",
@@ -54,13 +60,9 @@
     "platforms/cosmwasm/protocols/core",
     "platforms/cosmwasm/protocols/tokenBridge",
     "platforms/cosmwasm/protocols/ibc",
-    "examples"
-  ],
-  "unreleased": [
-    "tokenRegistry",
-    "examples",
     "platforms/aptos",
     "platforms/aptos/protocols/core",
-    "platforms/aptos/protocols/tokenBridge"
+    "platforms/aptos/protocols/tokenBridge",
+    "tokenRegistry"
   ]
 }
