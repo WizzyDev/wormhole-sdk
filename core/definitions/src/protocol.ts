@@ -72,7 +72,15 @@ export function getProtocolInitializer<P extends Platform, PN extends ProtocolNa
   if (!protocols) throw new Error(`No protocols registered for platform ${platform}`);
 
   const pctr = protocols.get(protocol);
-  if (!pctr) throw new Error(`No protocol registered for ${platform}:${protocol}`);
+
+  if (!pctr) {
+    const expectedPackageName = `@wormhole-foundation/connect-sdk-${platform.toLowerCase()}-${protocol
+      .replace("Automatic", "")
+      .toLowerCase()}`;
+    throw new Error(
+      `Protocol ${protocol} not registered for ${platform}, be sure to include: 'import "${expectedPackageName}" `,
+    );
+  }
 
   return pctr as ProtocolInitializer<P, PN>;
 }
