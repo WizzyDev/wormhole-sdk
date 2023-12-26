@@ -75,7 +75,7 @@ export namespace AutomaticTokenBridge {
   >;
 }
 
-export type TokenTransferDetails = {
+export type TokenTransferRequest = {
   token: TokenId | "native";
   amount: bigint;
   from: ChainAddress;
@@ -85,14 +85,14 @@ export type TokenTransferDetails = {
   nativeGas?: bigint;
 };
 
-export function isTokenTransferDetails(
-  thing: TokenTransferDetails | any,
-): thing is TokenTransferDetails {
+export function isTokenTransferRequest(
+  thing: TokenTransferRequest | any,
+): thing is TokenTransferRequest {
   return (
-    (<TokenTransferDetails>thing).token !== undefined &&
-    (<TokenTransferDetails>thing).amount !== undefined &&
-    (<TokenTransferDetails>thing).from !== undefined &&
-    (<TokenTransferDetails>thing).to !== undefined
+    (<TokenTransferRequest>thing).token !== undefined &&
+    (<TokenTransferRequest>thing).amount !== undefined &&
+    (<TokenTransferRequest>thing).from !== undefined &&
+    (<TokenTransferRequest>thing).to !== undefined
   );
 }
 

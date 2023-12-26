@@ -7,11 +7,11 @@ import {
 } from "@wormhole-foundation/sdk-base";
 import {
   ChainContext,
-  CircleTransferDetails,
-  GatewayTransferDetails,
+  CircleTransferRequest,
+  GatewayTransferRequest,
   Signer,
   TokenId,
-  TokenTransferDetails,
+  TokenTransferRequest,
   TransactionId,
   TxHash,
   VAA,
@@ -22,11 +22,11 @@ import { Wormhole } from "./wormhole";
 export type TransferRequest<PN extends ProtocolName = ProtocolName> = PN extends
   | "TokenBridge"
   | "AutomaticTokenBridge"
-  ? TokenTransferDetails
+  ? TokenTransferRequest
   : PN extends "CircleBridge" | "AutomaticCircleBridge"
-  ? CircleTransferDetails
+  ? CircleTransferRequest
   : PN extends "IbcBridge"
-  ? GatewayTransferDetails
+  ? GatewayTransferRequest
   : never;
 
 // Transfer state machine states

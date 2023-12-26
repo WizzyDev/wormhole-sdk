@@ -6,14 +6,14 @@ import {
   CircleAttestation,
   CircleBridge,
   CircleMessageId,
-  CircleTransferDetails,
+  CircleTransferRequest,
   Signer,
   TransactionId,
   TxHash,
   UnsignedTransaction,
   WormholeMessageId,
   isCircleMessageId,
-  isCircleTransferDetails,
+  isCircleTransferRequest,
   isTransactionIdentifier,
   isWormholeMessageId,
 } from "@wormhole-foundation/sdk-definitions";
@@ -32,7 +32,7 @@ export class CircleTransfer<N extends Network = Network>
   private _state: TransferState;
 
   // transfer details
-  transfer: CircleTransferDetails;
+  transfer: CircleTransferRequest;
 
   // Populated after Initialized
   txids: TransactionId[] = [];
@@ -50,7 +50,7 @@ export class CircleTransfer<N extends Network = Network>
     vaa?: AutomaticCircleBridge.VAA;
   }[];
 
-  private constructor(wh: Wormhole<N>, transfer: CircleTransferDetails) {
+  private constructor(wh: Wormhole<N>, transfer: CircleTransferRequest) {
     this._state = TransferState.Created;
     this.wh = wh;
     this.transfer = transfer;
@@ -63,7 +63,7 @@ export class CircleTransfer<N extends Network = Network>
   // Static initializers for in flight transfers that have not been completed
   static async from<N extends Network>(
     wh: Wormhole<N>,
-    from: CircleTransferDetails,
+    from: CircleTransferRequest,
   ): Promise<CircleTransfer<N>>;
   static async from<N extends Network>(
     wh: Wormhole<N>,
@@ -82,11 +82,11 @@ export class CircleTransfer<N extends Network = Network>
   ): Promise<CircleTransfer<N>>;
   static async from<N extends Network>(
     wh: Wormhole<N>,
-    from: CircleTransferDetails | WormholeMessageId | string | TransactionId,
+    from: CircleTransferRequest | WormholeMessageId | string | TransactionId,
     timeout: number = DEFAULT_TASK_TIMEOUT,
   ): Promise<CircleTransfer<N>> {
     // This is a new transfer, just return the object
-    if (isCircleTransferDetails(from)) {
+    if (isCircleTransferRequest(from)) {
       return new CircleTransfer(wh, from);
     }
 
@@ -129,7 +129,7 @@ export class CircleTransfer<N extends Network = Network>
       automatic = vaa.payloadName === "TransferWithRelay" && rcvAddress.equals(relayerAddress);
     }
 
-    const details: CircleTransferDetails = {
+    const details: CircleTransferRequest = {
       from: { chain: from.chain, address: vaa.payload.caller },
       to: { chain: rcvChain, address: rcvAddress },
       amount: vaa.payload.token.amount,
@@ -157,7 +157,7 @@ export class CircleTransfer<N extends Network = Network>
     const sendChain = circle.toCircleChain(msg.sourceDomain);
     const rcvChain = circle.toCircleChain(msg.destinationDomain);
 
-    const details: CircleTransferDetails = {
+    const details: CircleTransferRequest = {
       from: { chain: sendChain, address: xferSender },
       to: { chain: rcvChain, address: xferReceiver },
       amount: burnMessage.amount,
@@ -192,8 +192,8 @@ export class CircleTransfer<N extends Network = Network>
     } else {
       // Otherwise try to parse out a circle message
       const cb = await originChain.getCircleBridge();
-      const circleMessage = await cb.parseTransactionDetails(txid);
-      const details: CircleTransferDetails = {
+      const circleMessage = await cb.parseTransactionRequest(txid);
+      const details: CircleTransferRequest = {
         ...circleMessage,
         // Note: assuming automatic is false since we didn't find a VAA
         automatic: false,
@@ -274,7 +274,7 @@ export class CircleTransfer<N extends Network = Network>
       const fromChain = this.wh.getChain(this.transfer.from.chain);
 
       const cb = await fromChain.getCircleBridge();
-      const circleMessage = await cb.parseTransactionDetails(txid!.txid);
+      const circleMessage = await cb.parseTransactionRequest(txid!.txid);
       this.circleAttestations = [{ id: circleMessage.id, message: circleMessage.message }];
     }
 
@@ -362,7 +362,7 @@ export class CircleTransfer<N extends Network = Network>
   static async quoteTransfer<N extends Network>(
     srcChain: ChainContext<N, Platform, Chain>,
     dstChain: ChainContext<N, Platform, Chain>,
-    transfer: CircleTransferDetails,
+    transfer: CircleTransferRequest,
   ): Promise<TransferQuote> {
     const dstUsdcAddress = circle.usdcContract.get(dstChain.network, dstChain.chain);
     if (!dstUsdcAddress) throw "Invalid transfer, no USDC contract on destination";

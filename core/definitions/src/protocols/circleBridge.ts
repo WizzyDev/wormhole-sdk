@@ -70,7 +70,7 @@ export type CircleTransferMessage = {
   id: CircleMessageId;
 };
 
-export type CircleTransferDetails = {
+export type CircleTransferRequest = {
   amount: bigint;
   from: ChainAddress;
   to: ChainAddress;
@@ -79,11 +79,11 @@ export type CircleTransferDetails = {
   nativeGas?: bigint;
 };
 
-export function isCircleTransferDetails(thing: any): thing is CircleTransferDetails {
+export function isCircleTransferRequest(thing: any): thing is CircleTransferRequest {
   return (
-    (<CircleTransferDetails>thing).amount !== undefined &&
-    (<CircleTransferDetails>thing).from !== undefined &&
-    (<CircleTransferDetails>thing).to !== undefined
+    (<CircleTransferRequest>thing).amount !== undefined &&
+    (<CircleTransferRequest>thing).from !== undefined &&
+    (<CircleTransferRequest>thing).to !== undefined
   );
 }
 
@@ -103,7 +103,7 @@ export interface CircleBridge<
     recipient: ChainAddress,
     amount: bigint,
   ): AsyncGenerator<UnsignedTransaction<N, C>>;
-  parseTransactionDetails(txid: string): Promise<CircleTransferMessage>;
+  parseTransactionRequest(txid: string): Promise<CircleTransferMessage>;
 }
 
 export interface AutomaticCircleBridge<

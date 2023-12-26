@@ -15,13 +15,13 @@ import {
   TokenAddress,
   TokenBridge,
   TokenId,
-  TokenTransferDetails,
+  TokenTransferRequest,
   TransactionId,
   TxHash,
   UnsignedTransaction,
   WormholeMessageId,
   deserialize,
-  isTokenTransferDetails,
+  isTokenTransferRequest,
   isTransactionIdentifier,
   isWormholeMessageId,
   serialize,
@@ -49,7 +49,7 @@ export class TokenTransfer<N extends Network = Network>
   private _state: TransferState;
 
   // transfer details
-  transfer: TokenTransferDetails;
+  transfer: TokenTransferRequest;
 
   // txids, populated once transactions are submitted
   txids: TransactionId[] = [];
@@ -61,7 +61,7 @@ export class TokenTransfer<N extends Network = Network>
     vaa?: TransferVAA;
   }[];
 
-  private constructor(wh: Wormhole<N>, transfer: TokenTransferDetails) {
+  private constructor(wh: Wormhole<N>, transfer: TokenTransferRequest) {
     this._state = TransferState.Created;
     this.wh = wh;
     this.transfer = transfer;
@@ -74,7 +74,7 @@ export class TokenTransfer<N extends Network = Network>
   // Static initializers for in flight transfers that have not been completed
   static async from<N extends Network>(
     wh: Wormhole<N>,
-    from: TokenTransferDetails,
+    from: TokenTransferRequest,
   ): Promise<TokenTransfer<N>>;
   static async from<N extends Network>(
     wh: Wormhole<N>,
@@ -88,11 +88,11 @@ export class TokenTransfer<N extends Network = Network>
   ): Promise<TokenTransfer<N>>;
   static async from<N extends Network>(
     wh: Wormhole<N>,
-    from: TokenTransferDetails | WormholeMessageId | TransactionId,
+    from: TokenTransferRequest | WormholeMessageId | TransactionId,
     timeout: number = 6000,
   ): Promise<TokenTransfer<N>> {
-    if (isTokenTransferDetails(from)) {
-      await TokenTransfer.validateTransferDetails(wh, from);
+    if (isTokenTransferRequest(from)) {
+      await TokenTransfer.validateTransferRequest(wh, from);
       const fromChain = wh.getChain(from.from.chain);
       const toChain = wh.getChain(from.to.chain);
 
@@ -142,7 +142,7 @@ export class TokenTransfer<N extends Network = Network>
       to = { chain: vaa.payload.to.chain, address: vaa.payload.payload.targetRecipient };
     }
 
-    const details: TokenTransferDetails = {
+    const details: TokenTransferRequest = {
       token: token,
       amount,
       from,
@@ -350,7 +350,7 @@ export class TokenTransfer<N extends Network = Network>
   // Note: this assumes the transfer has already been validated with `validateTransfer`
   static async transfer<N extends Network>(
     fromChain: ChainContext<N, Platform, Chain>,
-    transfer: TokenTransferDetails,
+    transfer: TokenTransferRequest,
     signer: Signer<N, Chain>,
   ): Promise<TransactionId[]> {
     const senderAddress = toNative(signer.chain(), signer.address());
@@ -473,9 +473,9 @@ export class TokenTransfer<N extends Network = Network>
     return { chain: dstChain.chain, address: dstAddress };
   }
 
-  static async validateTransferDetails<N extends Network>(
+  static async validateTransferRequest<N extends Network>(
     wh: Wormhole<N>,
-    transfer: TokenTransferDetails,
+    transfer: TokenTransferRequest,
   ): Promise<void> {
     if (transfer.payload && transfer.automatic)
       throw new Error("Payload with automatic delivery is not supported");
@@ -501,7 +501,7 @@ export class TokenTransfer<N extends Network = Network>
   static async quoteTransfer<N extends Network>(
     srcChain: ChainContext<N, Platform, Chain>,
     dstChain: ChainContext<N, Platform, Chain>,
-    transfer: TokenTransferDetails,
+    transfer: TokenTransferRequest,
   ): Promise<TransferQuote> {
     const dstToken = await this.lookupDestinationToken(srcChain, dstChain, transfer.token);
     const srcToken =
@@ -566,8 +566,8 @@ export class TokenTransfer<N extends Network = Network>
   static async destinationOverrides<N extends Network>(
     srcChain: ChainContext<N, Platform, Chain>,
     dstChain: ChainContext<N, Platform, Chain>,
-    transfer: TokenTransferDetails,
-  ): Promise<TokenTransferDetails> {
+    transfer: TokenTransferRequest,
+  ): Promise<TokenTransferRequest> {
     const _transfer = { ...transfer };
 
     // Bit of (temporary) hackery until solana contracts support being

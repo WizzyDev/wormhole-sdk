@@ -14,7 +14,7 @@ import { TokenId, TxHash } from "../types";
 import { UnsignedTransaction } from "../unsignedTransaction";
 
 // Configuration for a transfer through the Gateway
-export type GatewayTransferDetails = {
+export type GatewayTransferRequest = {
   token: TokenId<Chain> | "native";
   amount: bigint;
   from: ChainAddress;
@@ -69,14 +69,14 @@ export function isGatewayIbcTransferMsg(
   return (<GatewayIbcTransferMsg>thing).gateway_ibc_token_bridge_payload !== undefined;
 }
 
-export function isGatewayTransferDetails(
-  thing: GatewayTransferDetails | any,
-): thing is GatewayTransferDetails {
+export function isGatewayTransferRequest(
+  thing: GatewayTransferRequest | any,
+): thing is GatewayTransferRequest {
   return (
-    (<GatewayTransferDetails>thing).token !== undefined &&
-    (<GatewayTransferDetails>thing).amount !== undefined &&
-    (<GatewayTransferDetails>thing).from !== undefined &&
-    (<GatewayTransferDetails>thing).to !== undefined
+    (<GatewayTransferRequest>thing).token !== undefined &&
+    (<GatewayTransferRequest>thing).amount !== undefined &&
+    (<GatewayTransferRequest>thing).from !== undefined &&
+    (<GatewayTransferRequest>thing).to !== undefined
   );
 }
 
@@ -95,9 +95,9 @@ export function toGatewayMsg(
 }
 
 export function gatewayTransferMsg(
-  gtd: GatewayTransferDetails | GatewayMsg,
+  gtd: GatewayTransferRequest | GatewayMsg,
 ): GatewayTransferMsg | GatewayTransferWithPayloadMsg {
-  if (isGatewayTransferDetails(gtd)) {
+  if (isGatewayTransferRequest(gtd)) {
     // If we've already got a payload, b64 encode it so it works in json
     const _payload = gtd.payload ? encoding.b64.encode(gtd.payload) : undefined;
 

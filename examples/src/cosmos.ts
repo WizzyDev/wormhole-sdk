@@ -1,7 +1,7 @@
 import {
   Network,
   GatewayTransfer,
-  GatewayTransferDetails,
+  GatewayTransferRequest,
   Platform,
   TokenId,
   Wormhole,
@@ -132,7 +132,7 @@ async function transferIntoCosmos(
     amount: amount,
     from: src.address,
     to: dst.address,
-  } as GatewayTransferDetails);
+  } as GatewayTransferRequest);
   console.log("Created GatewayTransfer: ", xfer.transfer);
 
   const srcTxIds = await xfer.initiateTransfer(src.signer);
@@ -162,7 +162,7 @@ async function transferBetweenCosmos<N extends Network>(
     amount: amount,
     from: src.address,
     to: dst.address,
-  } as GatewayTransferDetails);
+  } as GatewayTransferRequest);
   console.log("Created GatewayTransfer: ", xfer.transfer);
 
   const srcTxIds = await xfer.initiateTransfer(src.signer);
@@ -192,7 +192,7 @@ async function transferOutOfCosmos<N extends Network>(
     amount: amount,
     from: src.address,
     to: dst.address,
-  } as GatewayTransferDetails);
+  } as GatewayTransferRequest);
   console.log("Created GatewayTransfer: ", xfer.transfer);
 
   const srcTxIds = await xfer.initiateTransfer(src.signer);

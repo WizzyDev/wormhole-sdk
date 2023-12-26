@@ -9,7 +9,7 @@ import {
 import {
   ChainAddress,
   ChainContext,
-  GatewayTransferDetails,
+  GatewayTransferRequest,
   GatewayTransferMsg,
   GatewayTransferWithPayloadMsg,
   IbcBridge,
@@ -22,7 +22,7 @@ import {
   UniversalAddress,
   WormholeMessageId,
   gatewayTransferMsg,
-  isGatewayTransferDetails,
+  isGatewayTransferRequest,
   isTransactionIdentifier,
   isWormholeMessageId,
   toGatewayMsg,
@@ -61,7 +61,7 @@ export class GatewayTransfer<N extends Network = Network> implements WormholeTra
   private msg: GatewayTransferMsg | GatewayTransferWithPayloadMsg;
 
   // Initial Transfer Settings
-  transfer: GatewayTransferDetails;
+  transfer: GatewayTransferRequest;
 
   // Transaction Ids from source chain
   transactions: TransactionId[] = [];
@@ -78,7 +78,7 @@ export class GatewayTransfer<N extends Network = Network> implements WormholeTra
 
   private constructor(
     wh: Wormhole<N>,
-    transfer: GatewayTransferDetails,
+    transfer: GatewayTransferRequest,
     gateway: GatewayContext<N>,
     gatewayIbc: IbcBridge<N, "Cosmwasm", PlatformToChains<"Cosmwasm">>,
   ) {
@@ -111,7 +111,7 @@ export class GatewayTransfer<N extends Network = Network> implements WormholeTra
   // Static initializers for in flight transfers that have not been completed
   static async from<N extends Network>(
     wh: Wormhole<N>,
-    from: GatewayTransferDetails,
+    from: GatewayTransferRequest,
   ): Promise<GatewayTransfer<N>>;
   static async from<N extends Network>(
     wh: Wormhole<N>,
@@ -125,7 +125,7 @@ export class GatewayTransfer<N extends Network = Network> implements WormholeTra
   ): Promise<GatewayTransfer<N>>;
   static async from<N extends Network>(
     wh: Wormhole<N>,
-    from: GatewayTransferDetails | WormholeMessageId | TransactionId,
+    from: GatewayTransferRequest | WormholeMessageId | TransactionId,
     timeout?: number,
   ): Promise<GatewayTransfer<N>> {
     // we need this regardless of the type of `from`
@@ -133,12 +133,12 @@ export class GatewayTransfer<N extends Network = Network> implements WormholeTra
     const wcibc = await wc.getIbcBridge();
 
     // Fresh new transfer
-    if (isGatewayTransferDetails(from)) {
+    if (isGatewayTransferRequest(from)) {
       return new GatewayTransfer(wh, from, wc, wcibc);
     }
 
     // Picking up where we left off
-    let gtd: GatewayTransferDetails;
+    let gtd: GatewayTransferRequest;
     let txns: TransactionId[] = [];
     if (isTransactionIdentifier(from)) {
       txns.push(from);
@@ -169,7 +169,7 @@ export class GatewayTransfer<N extends Network = Network> implements WormholeTra
     wh: Wormhole<N>,
     from: WormholeMessageId,
     timeout?: number,
-  ): Promise<GatewayTransferDetails> {
+  ): Promise<GatewayTransferRequest> {
     // Starting with the VAA
     const vaa = await GatewayTransfer.getTransferVaa(wh, from, timeout);
 
@@ -208,7 +208,7 @@ export class GatewayTransfer<N extends Network = Network> implements WormholeTra
     const { chain, address, amount } = vaa.payload.token;
 
     // Reconstruct the details
-    const details: GatewayTransferDetails = {
+    const details: GatewayTransferRequest = {
       token: { chain, address },
       amount: amount,
       // TODO: the `from.address` here is a lie, but we don't
@@ -228,7 +228,7 @@ export class GatewayTransfer<N extends Network = Network> implements WormholeTra
     wh: Wormhole<N>,
     from: TransactionId,
     timeout?: number,
-  ): Promise<GatewayTransferDetails> {
+  ): Promise<GatewayTransferRequest> {
     const { chain, txid } = from;
 
     const originChain = wh.getChain(chain);
@@ -249,7 +249,7 @@ export class GatewayTransfer<N extends Network = Network> implements WormholeTra
   }
 
   // Recover transfer info the first step in the transfer
-  private static ibcTransfertoGatewayTransfer(xfer: IbcTransferInfo): GatewayTransferDetails {
+  private static ibcTransfertoGatewayTransfer(xfer: IbcTransferInfo): GatewayTransferRequest {
     const token = {
       chain: xfer.id.chain,
       address: toNative(xfer.id.chain, xfer.data.denom),
@@ -274,7 +274,7 @@ export class GatewayTransfer<N extends Network = Network> implements WormholeTra
 
     const payload = msg.payload ? encoding.bytes.encode(msg.payload) : undefined;
 
-    const details: GatewayTransferDetails = {
+    const details: GatewayTransferRequest = {
       token,
       amount: BigInt(xfer.data.amount),
       from: {
